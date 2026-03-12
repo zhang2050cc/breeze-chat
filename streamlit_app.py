@@ -212,7 +212,7 @@ st.markdown("<h1>✍️ 小红书爆款标题生成器</h1>", unsafe_allow_html=
 st.markdown('<p class="subhead">输入你的笔记主题，选择风格，AI帮你一键生成高点击率标题</p>', unsafe_allow_html=True)
 
 # --- 新增：风格选择器 ---
-col1, col2 = st.columns()
+col1, col2 = st.columns(2)
 with col1:
     topic = st.text_input("", placeholder="例如：口红试色、副业搞钱、租房改造", key="topic_input")
 with col2:
