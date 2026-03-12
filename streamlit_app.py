@@ -4,7 +4,7 @@ import time
 
 st.set_page_config(page_title="✨ 爆款标题工坊", page_icon="✍️", layout="centered")
 
-# -------------------- 高级CSS --------------------
+# -------------------- 高级CSS（含移动端适配）--------------------
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
@@ -40,6 +40,8 @@ st.markdown("""
         background: white;
         box-shadow: 0 4px 10px rgba(0,0,0,0.02);
         transition: all 0.3s;
+        width: 100%;  /* 默认占满父容器 */
+        color: #333 !important;  /* 确保文字可见 */
     }
     
     .stTextInput > div > div > input:focus {
@@ -108,12 +110,40 @@ st.markdown("""
         font-size: 0.9rem;
     }
     
-    /* 自定义分割线 */
     hr {
         border: none;
         height: 2px;
         background: linear-gradient(90deg, transparent, #8B5CF6, #EC4899, transparent);
         margin: 30px 0;
+    }
+    
+    /* ========== 移动端优化 ========== */
+    @media only screen and (max-width: 600px) {
+        h1 {
+            font-size: 2.2rem !important;
+        }
+        .subhead {
+            font-size: 1rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        .stTextInput > div > div > input {
+            font-size: 1rem !important;
+            padding: 12px 16px !important;
+        }
+        .stButton > button {
+            font-size: 1rem !important;
+            padding: 12px 20px !important;
+        }
+        .title-card {
+            padding: 16px !important;
+        }
+        .title-text {
+            font-size: 1.2rem !important;
+        }
+        .score-badge {
+            font-size: 0.8rem !important;
+            padding: 4px 12px !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -172,9 +202,14 @@ def generate_titles(topic, num=8):
 st.markdown("<h1>✨ 爆款标题工坊</h1>", unsafe_allow_html=True)
 st.markdown('<p class="subhead">输入主题，3秒生成10个小红书爆款标题</p>', unsafe_allow_html=True)
 
-topic = st.text_input("", placeholder="例如：口红试色、周末探店、早秋穿搭", key="topic_input")
+# 布局优化：输入框和生成按钮并排（移动端自动换行）
+col1, col2 = st.columns([3, 1])
+with col1:
+    topic = st.text_input("", placeholder="例如：口红试色、周末探店", label_visibility="collapsed")
+with col2:
+    generate = st.button("🚀 生成", use_container_width=True)
 
-if st.button("🚀 生成爆款标题", type="primary") and topic:
+if generate and topic:
     with st.spinner("AI 正在爆肝创作..."):
         time.sleep(1.2)
         titles = generate_titles(topic, num=10)
