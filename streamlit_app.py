@@ -185,12 +185,127 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------- 标题模板库（升级版：分类）--------------------
-# (这部分代码保持不变，为了节省篇幅，如果需要完整版请看上一轮回复)
-# ... (保留你原来的 TEMPLATES, STYLE_OPTIONS, NUMBERS 等定义) ...
-# 注意：这里为了阅读方便省略了中间的逻辑代码，实际使用时请保留原样
+# ==================================================
+# ========== 关键修复：数据定义（千万别删） ==========
+# ==================================================
+
+# -------------------- 标题模板库 --------------------
+TEMPLATES = {
+    "干货教程": [
+        "新手必看！{topic}的{num}个核心技巧，建议收藏",
+        "保姆级教程：{topic}从0到1的完整攻略",
+        "这{num}个{topic}误区，{group}千万别踩！",
+        "手把手教你{topic}，看完就会，{group}也能学会",
+        "关于{topic}，这{num}件事你必须知道"
+    ],
+    "情绪共鸣": [
+        "谁懂啊！{topic}真的太{adj}了",
+        "我不允许还有人不知道{topic}，真的{adj}哭",
+        "被问了{num}遍的{topic}，终于整理出来了",
+        "真的后悔没早点{topic}，不然早就{result}",
+        "救命！{topic}怎么可以这么{adj}！"
+    ],
+    "凡尔赛/炫耀": [
+        "月薪{salary}，但我真的只花{price}买了{topic}",
+        "坦白局：{topic}其实根本不需要花大钱",
+        "这{topic}被我{action}后，朋友都说我赚翻了",
+        "普通人也能拥有的{topic}，这质感绝了",
+        "我不小心把{topic}做成了{result}，这也太值了"
+    ],
+    "避雷/测评": [
+        "这{num}款{topic}真的别买！纯纯大冤种",
+        "{topic}红黑榜：只有这款能打",
+        "真实测评：{topic}到底值不值{price}？",
+        "千万别{topic}！除非你想...",
+        "避雷！{topic}的{num}个假象，看完省{price}"
+    ]
+}
+
+# 所有风格列表 (这就是刚才报错找不到的变量)
+STYLE_OPTIONS = list(TEMPLATES.keys())
+
+# 常用变量库
+NUMBERS = ["3", "5", "8", "10", "15"]
+GROUPS = ["小白", "新手", "打工人", "学生党", "宝妈"]
+ADJECTIVES = ["绝", "香", "炸", "爽", "好用", "离谱", "惊艳"]
+SALARY_RANGE = ["3k", "5k", "8k", "1w", "2w"]
+PRICE_RANGE = ["一杯奶茶钱", "不到100块", "0成本", "9.9包邮", "一顿饭钱"]
+
 # -------------------- 智能生成函数（核心逻辑）--------------------
-# ... (保留 generate_titles 和 score_title 函数) ...
+def generate_titles(topic, style, num=8):
+    results = []
+    # 如果选择“全部风格”，则混合生成
+    if style == "全部风格":
+        all_templates = []
+        for temp_list in TEMPLATES.values():
+            all_templates.extend(temp_list)
+    else:
+        all_templates = TEMPLATES[style]
+
+    # 确保生成数量
+    while len(results) < num:
+        # 1. 随机选择模板
+        template = random.choice(all_templates)
+        # 2. 智能替换占位符
+        title = template
+        # 替换 {topic}
+        title = title.replace("{topic}", topic)
+        # 替换 {num}
+        if "{num}" in title:
+            title = title.replace("{num}", random.choice(NUMBERS))
+        # 替换 {group}
+        if "{group}" in title:
+            title = title.replace("{group}", random.choice(GROUPS))
+        # 替换 {adj}
+        if "{adj}" in title:
+            title = title.replace("{adj}", random.choice(ADJECTIVES))
+        # 替换 {salary}
+        if "{salary}" in title:
+            title = title.replace("{salary}", random.choice(SALARY_RANGE))
+        # 替换 {price}
+        if "{price}" in title:
+            title = title.replace("{price}", random.choice(PRICE_RANGE))
+        # 替换 {action}
+        if "{action}" in title:
+            actions = ["改造", "翻新", "复刻", "升级"]
+            title = title.replace("{action}", random.choice(actions))
+        # 替换 {result}
+        if "{result}" in title:
+            results_list = ["省下一个月工资", "被老板夸爆", "美到窒息", "效率翻倍"]
+            title = title.replace("{result}", random.choice(results_list))
+        
+        # 3. 随机添加Emoji (60%概率)
+        emojis = ["🔥", "✨", "💥", "🌟", "🎉", "💯", "😱", "🤫", "👀", "💪", "🌸"]
+        if random.random() > 0.4:
+            emoji = random.choice(emojis)
+            # 50%概率加在开头，50%加在结尾
+            if random.random() > 0.5:
+                title = f"{emoji} {title}"
+            else:
+                title = f"{title} {emoji}"
+        
+        # 4. 去重
+        if title not in results:
+            results.append(title)
+
+    return results[:num]
+
+# -------------------- 评分函数 --------------------
+def score_title(title):
+    score = 0
+    if any(char.isdigit() for char in title):
+        score += 2
+    if "!" in title or "！" in title:
+        score += 1
+    if any(emoji in title for emoji in ["🔥", "✨", "💥", "🌟", "🎉"]):
+        score += 2
+    if 8 < len(title) < 20: # 修正长度判断
+        score += 2
+    if "?" in title or "？" in title:
+        score += 1
+    if any(word in title for word in ["后悔", "千万别", "避雷", "紧急", "绝了", "救命"]):
+        score += 2
+    return min(score, 10) # 最高10分
 
 # -------------------- 页面主体 --------------------
 st.markdown("<h1>✍️ 爆款标题生成器</h1>", unsafe_allow_html=True)
@@ -205,7 +320,7 @@ with col2:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# 生成按钮逻辑 (保持不变)
+# 生成按钮逻辑
 if st.button("🚀 一键生成爆款标题", type="primary", use_container_width=True) and topic:
     with st.spinner("AI 正在为你构思..."):
         time.sleep(0.5)
@@ -226,7 +341,7 @@ if titles:
 
     for i, title in enumerate(titles):
         score = score_title(title)
-        # 优化评分显示：使用金色星星
+        # 优化评分显示
         stars = "".join(["⭐" for _ in range(score // 2)]) + ("✨" if score % 2 else "")
         
         button_id = f"copy_{i}"
@@ -243,7 +358,7 @@ if titles:
         """
         st.markdown(card_html, unsafe_allow_html=True)
 
-    # 注入JavaScript (保持不变)
+    # 注入JavaScript
     st.markdown("""
     <script>
     function copyText(text) {
@@ -267,7 +382,7 @@ if titles:
         st.rerun()
 
 else:
-    # 首次打开或未输入时的示例（样式微调）
+    # 首次打开或未输入时的示例
     if not topic:
         st.markdown("#### 💡 热门示例")
         example_pairs = [
@@ -277,7 +392,6 @@ else:
             ("情感", "谁懂啊！这个早秋穿搭真的太减龄了👗")
         ]
         for cat, ex in example_pairs:
-            # 使用 st.markdown 并应用了上面的 .stAlert 样式优化
             st.markdown(f"**<span style='color: var(--primary-color);'>{cat}</span>**", unsafe_allow_html=True)
             st.info(ex)
 
